@@ -1,18 +1,16 @@
 import flet as ft
-from vistas.login import pantalla_login
-from vistas.menu_principal import mostrar_menu_principal
+from vistas.aparatos import pantalla_aparatos
+from vistas.usuarios import pantalla_usuarios
+from vistas.companias import pantalla_companias
+from vistas.empleados import pantalla_empleados
+from vistas.estados import pantalla_estados
+from vistas.grupos import pantalla_grupos
+from vistas.marcas import pantalla_marcas
+from vistas.articulos import pantalla_articulos
 
 def main(page: ft.Page):
-    page.title = "Gestor de Servicio Técnico"
-
-    def ir_login(p):
-        pantalla_login(p, ir_menu_principal)
-
-    def ir_menu_principal(p, usuario):
-        mostrar_menu_principal(p, usuario, ir_login)
-
-    # Inicia en la pantalla de login
-    ir_login(page)
+    page.title = "Gestión de Artículos"
+    pantalla_articulos(page)
 
 if __name__ == "__main__":
     ft.app(target=main)
