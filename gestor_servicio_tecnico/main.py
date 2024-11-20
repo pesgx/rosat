@@ -7,10 +7,11 @@ from vistas.estados import pantalla_estados
 from vistas.grupos import pantalla_grupos
 from vistas.marcas import pantalla_marcas
 from vistas.articulos import pantalla_articulos
+from vistas.clientes import pantalla_clientes
 
 def main(page: ft.Page):
-    page.title = "Gestión de Artículos"
-    pantalla_articulos(page)
+    page.title = "Gestión de Clientes"
+    pantalla_clientes(page)
 
 if __name__ == "__main__":
     ft.app(target=main)
