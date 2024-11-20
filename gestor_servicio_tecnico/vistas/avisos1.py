@@ -6,15 +6,6 @@ def pantalla_avisos(page):
     Pantalla principal para la gestión de avisos.
     Incluye contenedores, tablas y botones para CRUD.
     """
-    #     # Inicializar Dropdowns con datos dinámicos
-    # combo_cliente = ft.Dropdown(label="Cliente", width=150, options=cargar_clientes())
-    # combo_aparato = ft.Dropdown(label="Aparato", width=150, options=cargar_aparatos())
-    # combo_marca = ft.Dropdown(label="Marca", width=150, options=cargar_marcas())
-    # combo_empleado = ft.Dropdown(label="Empleado", width=150, options=cargar_empleados())
-    # combo_estado_aviso = ft.Dropdown(label="Estado del Aviso", width=150, options=cargar_estados())
-    # combo_articulo = ft.Dropdown(label="Artículo", width=150, options=cargar_articulos())
-    # combo_compañia = ft.Dropdown(label="Compañía", width=150, options=cargar_compañias())
-    # combo_grupo = ft.Dropdown(label="Grupo", width=150, options=cargar_grupos())
 
     # Campos y objetos de la interfaz
     txt_id_aviso = ft.TextField(label="ID Aviso", width=150, read_only=True)
@@ -60,7 +51,7 @@ def pantalla_avisos(page):
             txt_codigo.value.strip(), txt_descripcion_averia.value.strip(),
             txt_descripcion_reparacion.value.strip(), txt_nota.value.strip(),
             combo_empleado.value, combo_compañia.value, combo_grupo.value,
-            combo_estado_aviso.value, mensaje,page
+            combo_estado_aviso.value, mensaje
         ),
         bgcolor=ft.colors.GREEN,
     )
@@ -75,7 +66,7 @@ def pantalla_avisos(page):
             txt_codigo.value.strip(), txt_descripcion_averia.value.strip(),
             txt_descripcion_reparacion.value.strip(), txt_nota.value.strip(),
             combo_empleado.value, combo_compañia.value, combo_grupo.value,
-            combo_estado_aviso.value, mensaje,page
+            combo_estado_aviso.value, mensaje
         ),
         bgcolor=ft.colors.BLUE,
     )
@@ -114,7 +105,7 @@ def pantalla_avisos(page):
             [
                 ft.Row(
                     [
-                        ft.Dropdown(label="Cliente", width=100, options=cargar_clientes()),
+                        ft.Dropdown(label="Cliente", width=100, options=[]),
                         ft.TextField(label="Código del Cliente", width=100),
                         ft.TextField(label="Nombre del Cliente", width=100),
                         ft.TextField(label="Nombre Comercial", width=100),
@@ -144,8 +135,8 @@ def pantalla_avisos(page):
             [
                 ft.Row(
                     [
-                        ft.Dropdown(label="Aparato", width=100, options=cargar_aparatos()),
-                        ft.Dropdown(label="Marca", width=100, options=cargar_marcas()),
+                        ft.Dropdown(label="Aparato", width=100, options=[]),
+                        ft.Dropdown(label="Marca", width=100, options=[]),
                         ft.TextField(label="Modelo", width=100),
                         ft.TextField(label="Número de Serie", width=100),
                         ft.TextField(label="Código", width=100),
@@ -171,10 +162,10 @@ def pantalla_avisos(page):
     contenedor_adjuntos = ft.Container(
         content=ft.Row(
             [
-                ft.Dropdown(label="Empleado", width=100, options=cargar_empleados()),
-                ft.Dropdown(label="Compañía", width=100, options=cargar_compañias()),
-                ft.Dropdown(label="Grupo", width=100, options=cargar_grupos()),
-                ft.Dropdown(label="Estado del Aviso", width=100, options=cargar_estados()),
+                ft.Dropdown(label="Empleado", width=100, options=[]),
+                ft.Dropdown(label="Compañía", width=100, options=[]),
+                ft.Dropdown(label="Grupo", width=100, options=[]),
+                ft.Dropdown(label="Estado del Aviso", width=100, options=[]),
                 ft.TextField(label="Archivos Adjuntos", width=100),
                 ft.ElevatedButton("Subir Archivo", bgcolor=ft.colors.BLUE),
             ],
@@ -198,7 +189,7 @@ def pantalla_avisos(page):
                 ),
                 ft.Row(
                     [
-                        ft.Dropdown(label="Artículo", width=100, options=cargar_articulos()),
+                        ft.Dropdown(label="Artículo", width=100, options=[]),
                         ft.TextField(label="Cantidad", width=100),
                         ft.TextField(label="Precio Unitario", width=100),
                         ft.TextField(label="Total Línea", width=100, read_only=True),
@@ -265,19 +256,6 @@ def pantalla_avisos(page):
         border=ft.border.all(1, ft.colors.GREY),
     )
 
-    # Contenedor de botones CRUD
-    contenedor_botones_crud = ft.Container(
-        content=ft.Row(
-            [
-                boton_registrar,
-                boton_actualizar,
-                boton_eliminar,
-                boton_cargar,
-            ],
-            spacing=10,
-        ),
-        padding=5,
-    )
 
 
 
@@ -292,70 +270,18 @@ def pantalla_avisos(page):
                 contenedor_lineas_aviso,
                 contenedor_total_aviso,
                 contenedor_tabla_datos,
-                contenedor_botones_crud,
             ],
             spacing=5,
         )
     )
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
+
 # Funciones CRUD
-
-def registrar_aviso(
-    numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-    cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-    descripcion_averia, descripcion_reparacion, nota, empleado_id,
-    compañia_id, grupo_id, estado_aviso_id, mensaje_obj, page
-):
-    """Registra un nuevo aviso en la base de datos."""
-    # Validación de campos obligatorios
-    if not numero_aviso or not cliente_id or not aparato_id or not empleado_id:
-        mensaje_obj.value = "Por favor, rellena todos los campos obligatorios."
-        mensaje_obj.color = ft.colors.RED
-        page.update()  # Actualiza la interfaz para mostrar el mensaje
-        return
-
-    # Intentar registrar el aviso en la base de datos
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            INSERT INTO tabla_avisos (
-                numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-                cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-                descripcion_averia, descripcion_reparacion, nota, empleado_id,
-                compañia_id, grupo_id, estado_aviso_id
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        parametros = (
-            numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-            descripcion_averia, descripcion_reparacion, nota, empleado_id,
-            compañia_id, grupo_id, estado_aviso_id
-        )
-        conexion.ejecutar_consulta(consulta, parametros)
-        mensaje_obj.value = "¡Aviso registrado con éxito!"
-        mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al registrar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
-
-    # Actualizar la interfaz y limpiar los campos
-
-    page.update()
-
-
 
 def actualizar_aviso(
     id_aviso, numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion,
     hora_agenda, cliente_id, aparato_id, marca_id, modelo, numero_serie,
     codigo, descripcion_averia, descripcion_reparacion, nota, empleado_id,
-    compañia_id, grupo_id, estado_aviso_id, mensaje_obj,page
+    compañia_id, grupo_id, estado_aviso_id, mensaje_obj
 ):
     """Actualiza los datos de un aviso existente."""
     if not id_aviso:
@@ -390,6 +316,45 @@ def actualizar_aviso(
         mensaje_obj.color = ft.colors.RED
     finally:
         conexion.cerrar()
+
+def registrar_aviso(
+    numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion,
+    hora_agenda, cliente_id, aparato_id, marca_id, modelo, numero_serie,
+    codigo, descripcion_averia, descripcion_reparacion, nota, empleado_id,
+    compañia_id, grupo_id, estado_aviso_id, mensaje_obj
+):
+    """Registra un nuevo aviso en la base de datos."""
+    if not numero_aviso or not cliente_id or not aparato_id or not empleado_id:
+        mensaje_obj.value = "Todos los campos obligatorios deben completarse."
+        mensaje_obj.color = ft.colors.RED
+        return
+
+    conexion = ConexionBD()
+    try:
+        conexion.conectar()
+        consulta = """
+            INSERT INTO tabla_avisos (
+                numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
+                cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
+                descripcion_averia, descripcion_reparacion, nota, empleado_id,
+                compañia_id, grupo_id, estado_aviso_id
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        parametros = (
+            numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
+            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
+            descripcion_averia, descripcion_reparacion, nota, empleado_id,
+            compañia_id, grupo_id, estado_aviso_id
+        )
+        conexion.ejecutar_consulta(consulta, parametros)
+        mensaje_obj.value = "¡Aviso registrado con éxito!"
+        mensaje_obj.color = ft.colors.GREEN
+    except Exception as e:
+        mensaje_obj.value = f"Error al registrar aviso: {str(e)}"
+        mensaje_obj.color = ft.colors.RED
+    finally:
+        conexion.cerrar()
+
 
 
 def eliminar_aviso(id_aviso, mensaje_obj):
@@ -451,242 +416,3 @@ def cargar_datos(tabla_datos, mensaje_obj):
                     ]
                 )
             )
-
-
-def seleccionar_aviso(
-    id_aviso, txt_id_aviso, txt_numero_aviso, txt_numero_expediente, txt_fecha_recepcion,
-    txt_fecha_reparacion, txt_hora_agenda, combo_cliente, combo_aparato, combo_marca,
-    txt_modelo, txt_numero_serie, txt_codigo, txt_descripcion_averia, txt_descripcion_reparacion,
-    txt_nota, combo_empleado, combo_compañia, combo_grupo, combo_estado_aviso, mensaje_obj, page
-):
-    """Selecciona un aviso de la tabla y autocompleta los campos."""
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            SELECT numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-            descripcion_averia, descripcion_reparacion, nota, empleado_id,
-            compañia_id, grupo_id, estado_aviso_id
-            FROM tabla_avisos
-            WHERE id_aviso = %s
-        """
-        resultado = conexion.ejecutar_consulta(consulta, (id_aviso,))
-        if resultado:
-            fila = resultado[0]
-            txt_id_aviso.data = id_aviso
-            txt_numero_aviso.value = fila[0]
-            txt_numero_expediente.value = fila[1]
-            txt_fecha_recepcion.value = fila[2]
-            txt_fecha_reparacion.value = fila[3]
-            txt_hora_agenda.value = fila[4]
-            combo_cliente.value = fila[5]
-            combo_aparato.value = fila[6]
-            combo_marca.value = fila[7]
-            txt_modelo.value = fila[8]
-            txt_numero_serie.value = fila[9]
-            txt_codigo.value = fila[10]
-            txt_descripcion_averia.value = fila[11]
-            txt_descripcion_reparacion.value = fila[12]
-            txt_nota.value = fila[13]
-            combo_empleado.value = fila[14]
-            combo_compañia.value = fila[15]
-            combo_grupo.value = fila[16]
-            combo_estado_aviso.value = fila[17]
-            mensaje_obj.value = "Aviso cargado correctamente."
-            mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al cargar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
-    page.update()
-
-
-def limpiar_campos(
-    txt_id_aviso, txt_numero_aviso, txt_numero_expediente, txt_fecha_recepcion, 
-    txt_fecha_reparacion, txt_hora_agenda, combo_cliente, combo_aparato, 
-    combo_marca, txt_modelo, txt_numero_serie, txt_codigo, 
-    txt_descripcion_averia, txt_descripcion_reparacion, txt_nota, 
-    combo_empleado, combo_compañia, combo_grupo, combo_estado_aviso, mensaje_obj, page
-):
-    """Limpia todos los campos de texto y dropdowns en la interfaz."""
-    # Limpiar campos de texto
-    txt_id_aviso.data = None
-    txt_id_aviso.value = ""
-    txt_numero_aviso.value = ""
-    txt_numero_expediente.value = ""
-    txt_fecha_recepcion.value = ""
-    txt_fecha_reparacion.value = ""
-    txt_hora_agenda.value = ""
-    txt_modelo.value = ""
-    txt_numero_serie.value = ""
-    txt_codigo.value = ""
-    txt_descripcion_averia.value = ""
-    txt_descripcion_reparacion.value = ""
-    txt_nota.value = ""
-
-    # Restablecer dropdowns
-    combo_cliente.value = None
-    combo_aparato.value = None
-    combo_marca.value = None
-    combo_empleado.value = None
-    combo_compañia.value = None
-    combo_grupo.value = None
-    combo_estado_aviso.value = None
-
-    # Limpiar mensajes
-    mensaje_obj.value = ""
-    mensaje_obj.color = ft.colors.GREEN
-
-    # Actualizar la interfaz
-    page.update()
-
-
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-def cargar_clientes():
-    """Carga los clientes desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_cliente, nombre_cliente FROM tabla_clientes"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar clientes: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_aparatos():
-    """Carga los aparatos desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_aparato, nombre_aparato FROM tabla_aparatos"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar aparatos: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_empleados():
-    """Carga los empleados desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_empleado, nombre_empleado FROM tabla_empleados"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar empleados: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_marcas():
-    """Carga las marcas desde la base de datos y las devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_marca, nombre_marca FROM tabla_marcas"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar marcas: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_estados():
-    """Carga los estados desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_estado, nombre_estado FROM tabla_estados"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar estados: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_articulos():
-    """Carga los artículos desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_articulo, nombre_articulo FROM tabla_articulo"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar artículos: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_compañias():
-    """Carga las compañías desde la base de datos y las devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_compañia, nombre_compañia FROM tabla_compañias"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar compañías: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-def cargar_grupos():
-    """Carga los grupos desde la base de datos y los devuelve como opciones del Dropdown."""
-    conexion = ConexionBD()
-    opciones = []
-    try:
-        conexion.conectar()
-        consulta = "SELECT id_grupo, nombre_grupo FROM tabla_grupos"
-        resultados = conexion.ejecutar_consulta(consulta)
-        for fila in resultados:
-            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
-    except Exception as e:
-        print(f"Error al cargar grupos: {str(e)}")
-    finally:
-        conexion.cerrar()
-    return opciones
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def mensaje_prueba(*args):
-#     print("Registrar llamado con argumentos:", args)
