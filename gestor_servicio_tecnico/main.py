@@ -1,3 +1,7 @@
+'''
+    Archivo principal de la aplicación.
+    Inicia la pantalla principal de la aplicación.'''
+
 import flet as ft
 from vistas.aparatos import pantalla_aparatos
 from vistas.usuarios import pantalla_usuarios
