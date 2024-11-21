@@ -1,20 +1,28 @@
 from db.conexion import ConexionBD
+import base64
 import flet as ft
 
+
+
+'''  ################################################################################################################
+
+                                                    INTERFAZ GRAFICA
+
+################################################################################################################   '''
 def pantalla_avisos(page):
     """
     Pantalla principal para la gestión de avisos.
     Incluye contenedores, tablas y botones para CRUD.
     """
-    #     # Inicializar Dropdowns con datos dinámicos
-    # combo_cliente = ft.Dropdown(label="Cliente", width=150, options=cargar_clientes())
-    # combo_aparato = ft.Dropdown(label="Aparato", width=150, options=cargar_aparatos())
-    # combo_marca = ft.Dropdown(label="Marca", width=150, options=cargar_marcas())
-    # combo_empleado = ft.Dropdown(label="Empleado", width=150, options=cargar_empleados())
-    # combo_estado_aviso = ft.Dropdown(label="Estado del Aviso", width=150, options=cargar_estados())
-    # combo_articulo = ft.Dropdown(label="Artículo", width=150, options=cargar_articulos())
-    # combo_compañia = ft.Dropdown(label="Compañía", width=150, options=cargar_compañias())
-    # combo_grupo = ft.Dropdown(label="Grupo", width=150, options=cargar_grupos())
+    # Inicializar FilePicker y agregarlo a la página
+    file_picker = inicializar_file_picker(page)
+    # Definir los campos de cliente como globales para accesibilidad
+    global txt_codigo, txt_nombre, txt_nombre_comercial, txt_nif, txt_domicilio
+    global txt_telefono_1, txt_telefono_2, txt_nota
+    global txt_archivos_adjuntos  # Asegurar que sea accesible globalmente
+    # Variable global para almacenar temporalmente los datos del archivo
+    archivo_binario = None
+    
 
     # Campos y objetos de la interfaz
     txt_id_aviso = ft.TextField(label="ID Aviso", width=150, read_only=True)
@@ -23,20 +31,36 @@ def pantalla_avisos(page):
     txt_fecha_recepcion = ft.TextField(label="Fecha de Recepción (dd/mm/aaaa)", width=150)
     txt_fecha_reparacion = ft.TextField(label="Fecha de Reparación (dd/mm/aaaa)", width=150)
     txt_hora_agenda = ft.TextField(label="Hora Agenda (00:00)", width=150)
-    combo_cliente = ft.Dropdown(label="Cliente", width=150, options=[])
-    combo_aparato = ft.Dropdown(label="Aparato", width=150, options=[])
-    combo_marca = ft.Dropdown(label="Marca", width=150, options=[])
+    combo_cliente = ft.Dropdown(label="Cliente", width=200, options=cargar_clientes(), on_change=manejar_seleccion_cliente)
+    combo_aparato = ft.Dropdown(label="Aparato", width=150, options=cargar_aparatos())
+    combo_marca = ft.Dropdown(label="Marca", width=150, options=cargar_marcas())
     txt_modelo = ft.TextField(label="Modelo", width=150)
     txt_numero_serie = ft.TextField(label="Número de Serie", width=150)
     txt_codigo = ft.TextField(label="Código", width=150)
     txt_descripcion_averia = ft.TextField(label="Descripción de Avería", multiline=True, width=150)
     txt_descripcion_reparacion = ft.TextField(label="Descripción de Reparación", multiline=True, width=150)
     txt_nota = ft.TextField(label="Nota", multiline=True, width=150)
-    combo_empleado = ft.Dropdown(label="Empleado", width=150, options=[])
-    combo_compañia = ft.Dropdown(label="Compañía", width=150, options=[])
-    combo_grupo = ft.Dropdown(label="Grupo", width=150, options=[])
-    combo_estado_aviso = ft.Dropdown(label="Estado del Aviso", width=150, options=[])
-    mensaje = ft.Text("", size=14, color=ft.colors.GREEN)
+    combo_empleado = ft.Dropdown(label="Empleado", width=150, options=cargar_empleados())
+    combo_compañia = ft.Dropdown(label="Compañía", width=150, options=cargar_compañias())
+    combo_grupo = ft.Dropdown(label="Grupo", width=150, options=cargar_grupos())
+    combo_estado_aviso = ft.Dropdown(label="Estado del Aviso", width=150, options=cargar_estados())
+    txt_archivos_adjuntos = ft.TextField(label="Archivos Adjuntos", width=200, read_only=True)
+    txt_base_importe = ft.TextField(label="Base Importe (€)", width=150)
+    txt_porcentaje_importe = ft.TextField(label="Porcentaje Importe (%)", width=150)
+    txt_impuesto_importe = ft.TextField(label="Impuesto Importe (€)", width=150, read_only=True)
+    txt_importe_aviso = ft.TextField(label="Importe Total (€)", width=150, read_only=True)
+    # Campos de cliente
+    txt_codigo = ft.TextField(label="Código del Cliente", width=200, read_only=True)
+    txt_nombre = ft.TextField(label="Nombre del Cliente", width=200, read_only=True)
+    txt_nombre_comercial = ft.TextField(label="Nombre Comercial", width=200, read_only=True)
+    txt_nif = ft.TextField(label="NIF", width=200, read_only=True)
+    txt_domicilio = ft.TextField(label="Domicilio", width=200, read_only=True)
+    txt_telefono_1 = ft.TextField(label="Teléfono 1", width=200, read_only=True)
+    txt_telefono_2 = ft.TextField(label="Teléfono 2", width=200, read_only=True)
+    txt_nota = ft.TextField(label="Nota", multiline=True, width=200, read_only=True)
+
+    # Mostrar el nombre del archivo en el campo de texto
+
 
     tabla_datos = ft.DataTable(
         columns=[
@@ -52,55 +76,36 @@ def pantalla_avisos(page):
     # Botones
     boton_registrar = ft.ElevatedButton(
         "Registrar",
-        on_click=lambda e: registrar_aviso(
-            txt_numero_aviso.value.strip(), txt_numero_expediente.value.strip(),
-            txt_fecha_recepcion.value.strip(), txt_fecha_reparacion.value.strip(),
-            txt_hora_agenda.value.strip(), combo_cliente.value, combo_aparato.value,
-            combo_marca.value, txt_modelo.value.strip(), txt_numero_serie.value.strip(),
-            txt_codigo.value.strip(), txt_descripcion_averia.value.strip(),
-            txt_descripcion_reparacion.value.strip(), txt_nota.value.strip(),
-            combo_empleado.value, combo_compañia.value, combo_grupo.value,
-            combo_estado_aviso.value, mensaje,page
-        ),
+        on_click=lambda e: registrar_aviso(),
         bgcolor=ft.colors.GREEN,
     )
 
     boton_actualizar = ft.ElevatedButton(
         "Actualizar",
-        on_click=lambda e: actualizar_aviso(
-            txt_id_aviso.data, txt_numero_aviso.value.strip(), txt_numero_expediente.value.strip(),
-            txt_fecha_recepcion.value.strip(), txt_fecha_reparacion.value.strip(),
-            txt_hora_agenda.value.strip(), combo_cliente.value, combo_aparato.value,
-            combo_marca.value, txt_modelo.value.strip(), txt_numero_serie.value.strip(),
-            txt_codigo.value.strip(), txt_descripcion_averia.value.strip(),
-            txt_descripcion_reparacion.value.strip(), txt_nota.value.strip(),
-            combo_empleado.value, combo_compañia.value, combo_grupo.value,
-            combo_estado_aviso.value, mensaje,page
-        ),
+        on_click=lambda e: actualizar_aviso(),
         bgcolor=ft.colors.BLUE,
     )
 
     boton_eliminar = ft.ElevatedButton(
         "Eliminar",
-        on_click=lambda e: eliminar_aviso(txt_id_aviso.data, mensaje),
+        on_click=lambda e: eliminar_aviso(),
         bgcolor=ft.colors.RED,
     )
-
-    boton_cargar = ft.ElevatedButton(
-        "Cargar Datos",
-        on_click=lambda e: cargar_datos(tabla_datos, mensaje),
-        bgcolor=ft.colors.ORANGE,
+    # Botón para subir archivo
+    boton_subir_archivo = ft.ElevatedButton(
+        "Subir Archivo",
+        bgcolor=ft.colors.BLUE,
+        on_click=lambda e: manejar_subir_archivo(e, file_picker),
     )
-
     # Diseño de la pantalla
     contenedor_datos_aviso = ft.Container(
         content=ft.Row(
             [
-                ft.TextField(label="Número de Aviso", width=150),
-                ft.TextField(label="Número de Expediente", width=150),
-                ft.TextField(label="Fecha de Recepción (dd/mm/aaaa)", width=150),
-                ft.TextField(label="Fecha de Reparación (dd/mm/aaaa)", width=150),
-                ft.TextField(label="Hora Agenda (00:00)", width=150),
+                ft.TextField(label="Número de Aviso", width=200),
+                ft.TextField(label="Número de Expediente", width=200),
+                ft.TextField(label="Fecha de Recepción (dd/mm/aaaa)", width=200),
+                ft.TextField(label="Fecha de Reparación (dd/mm/aaaa)", width=200),
+                ft.TextField(label="Hora Agenda (00:00)", width=200),
             ],
             spacing=5,
         ),
@@ -109,28 +114,12 @@ def pantalla_avisos(page):
     )
 
     # Contenedor 2: Datos del Cliente
+# Contenedor de datos del cliente
     contenedor_datos_cliente = ft.Container(
         content=ft.Column(
             [
-                ft.Row(
-                    [
-                        ft.Dropdown(label="Cliente", width=100, options=cargar_clientes()),
-                        ft.TextField(label="Código del Cliente", width=100),
-                        ft.TextField(label="Nombre del Cliente", width=100),
-                        ft.TextField(label="Nombre Comercial", width=100),
-                    ],
-                    spacing=5,
-                ),
-                ft.Row(
-                    [
-                        ft.TextField(label="NIF", width=100),
-                        ft.TextField(label="Domicilio", width=100),
-                        ft.TextField(label="Teléfono 1", width=100),
-                        ft.TextField(label="Teléfono 2", width=100),
-                        ft.TextField(label="Nota", multiline=True, width=100),
-                    ],
-                    spacing=5,
-                ),
+                ft.Row([combo_cliente, txt_codigo, txt_nombre, txt_nombre_comercial], spacing=5),
+                ft.Row([txt_nif, txt_domicilio, txt_telefono_1, txt_telefono_2, txt_nota], spacing=5)
             ],
             spacing=5,
         ),
@@ -144,19 +133,19 @@ def pantalla_avisos(page):
             [
                 ft.Row(
                     [
-                        ft.Dropdown(label="Aparato", width=100, options=cargar_aparatos()),
-                        ft.Dropdown(label="Marca", width=100, options=cargar_marcas()),
-                        ft.TextField(label="Modelo", width=100),
-                        ft.TextField(label="Número de Serie", width=100),
-                        ft.TextField(label="Código", width=100),
+                        ft.Dropdown(label="Aparato", width=200, options=cargar_aparatos()),
+                        ft.Dropdown(label="Marca", width=200, options=cargar_marcas()),
+                        ft.TextField(label="Modelo", width=200),
+                        ft.TextField(label="Número de Serie", width=200),
+                        ft.TextField(label="Código", width=200),
                     ],
                     spacing=5,
                 ),
                 ft.Row(
                     [
-                        ft.TextField(label="Descripción de Avería", multiline=True, width=100),
-                        ft.TextField(label="Descripción de Reparación", multiline=True, width=100),
-                        ft.TextField(label="Nota", multiline=True, width=100),
+                        ft.TextField(label="Descripción de Avería", multiline=True, width=200),
+                        ft.TextField(label="Descripción de Reparación", multiline=True, width=200),
+                        ft.TextField(label="Nota", multiline=True, width=200),
                     ],
                     spacing=5,
                 ),
@@ -171,12 +160,14 @@ def pantalla_avisos(page):
     contenedor_adjuntos = ft.Container(
         content=ft.Row(
             [
-                ft.Dropdown(label="Empleado", width=100, options=cargar_empleados()),
-                ft.Dropdown(label="Compañía", width=100, options=cargar_compañias()),
-                ft.Dropdown(label="Grupo", width=100, options=cargar_grupos()),
-                ft.Dropdown(label="Estado del Aviso", width=100, options=cargar_estados()),
-                ft.TextField(label="Archivos Adjuntos", width=100),
-                ft.ElevatedButton("Subir Archivo", bgcolor=ft.colors.BLUE),
+                ft.Dropdown(label="Empleado", width=200, options=cargar_empleados()),
+                ft.Dropdown(label="Compañía", width=200, options=cargar_compañias()),
+                ft.Dropdown(label="Grupo", width=200, options=cargar_grupos()),
+                ft.Dropdown(label="Estado del Aviso", width=200, options=cargar_estados()),
+                ft.TextField(label="Archivos Adjuntos", width=200),
+                txt_archivos_adjuntos,  # Campo de texto para mostrar el archivo
+                boton_subir_archivo,   # Botón para seleccionar el archivo
+                #ft.ElevatedButton("Subir Archivo", bgcolor=ft.colors.BLUE),
             ],
             spacing=5,
         ),
@@ -198,10 +189,10 @@ def pantalla_avisos(page):
                 ),
                 ft.Row(
                     [
-                        ft.Dropdown(label="Artículo", width=100, options=cargar_articulos()),
-                        ft.TextField(label="Cantidad", width=100),
-                        ft.TextField(label="Precio Unitario", width=100),
-                        ft.TextField(label="Total Línea", width=100, read_only=True),
+                        ft.Dropdown(label="Artículo", width=200, options=cargar_articulos()),
+                        ft.TextField(label="Cantidad", width=200),
+                        ft.TextField(label="Precio Unitario", width=200),
+                        ft.TextField(label="Total Línea", width=200, read_only=True),
                     ],
                     spacing=5,
                 ),
@@ -225,10 +216,10 @@ def pantalla_avisos(page):
     contenedor_total_aviso = ft.Container(
         content=ft.Row(
             [
-                ft.TextField(label="Base Importe", width=100, read_only=True),
-                ft.TextField(label="Porcentaje Importe", width=100),
-                ft.TextField(label="Impuesto Importe", width=100, read_only=True),
-                ft.TextField(label="Importe Total", width=100, read_only=True),
+                ft.TextField(label="Base Importe", width=200, read_only=True),
+                ft.TextField(label="Porcentaje Importe", width=200),
+                ft.TextField(label="Impuesto Importe", width=200, read_only=True),
+                ft.TextField(label="Importe Total", width=200, read_only=True),
             ],
             spacing=5,
         ),
@@ -242,8 +233,8 @@ def pantalla_avisos(page):
             [
                 ft.Row(
                     [
-                        ft.Dropdown(label="Filtrar por Campo", width=100, options=[]),
-                        ft.TextField(label="Buscar", width=100),
+                        ft.Dropdown(label="Filtrar por Campo", width=200, options=[]),
+                        ft.TextField(label="Buscar", width=200),
                         ft.ElevatedButton("Buscar", bgcolor=ft.colors.GREEN),
                         ft.ElevatedButton("Mostrar Todos", bgcolor=ft.colors.BLUE),
                     ],
@@ -272,7 +263,7 @@ def pantalla_avisos(page):
                 boton_registrar,
                 boton_actualizar,
                 boton_eliminar,
-                boton_cargar,
+
             ],
             spacing=10,
         ),
@@ -297,257 +288,12 @@ def pantalla_avisos(page):
             spacing=5,
         )
     )
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-# Funciones CRUD
 
-def registrar_aviso(
-    numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-    cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-    descripcion_averia, descripcion_reparacion, nota, empleado_id,
-    compañia_id, grupo_id, estado_aviso_id, mensaje_obj, page
-):
-    """Registra un nuevo aviso en la base de datos."""
-    # Validación de campos obligatorios
-    if not numero_aviso or not cliente_id or not aparato_id or not empleado_id:
-        mensaje_obj.value = "Por favor, rellena todos los campos obligatorios."
-        mensaje_obj.color = ft.colors.RED
-        page.update()  # Actualiza la interfaz para mostrar el mensaje
-        return
+'''################################################################################################################
 
-    # Intentar registrar el aviso en la base de datos
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            INSERT INTO tabla_avisos (
-                numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-                cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-                descripcion_averia, descripcion_reparacion, nota, empleado_id,
-                compañia_id, grupo_id, estado_aviso_id
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        parametros = (
-            numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-            descripcion_averia, descripcion_reparacion, nota, empleado_id,
-            compañia_id, grupo_id, estado_aviso_id
-        )
-        conexion.ejecutar_consulta(consulta, parametros)
-        mensaje_obj.value = "¡Aviso registrado con éxito!"
-        mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al registrar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
+                                                    FUNCIONES
 
-    # Actualizar la interfaz y limpiar los campos
-
-    page.update()
-
-
-
-def actualizar_aviso(
-    id_aviso, numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion,
-    hora_agenda, cliente_id, aparato_id, marca_id, modelo, numero_serie,
-    codigo, descripcion_averia, descripcion_reparacion, nota, empleado_id,
-    compañia_id, grupo_id, estado_aviso_id, mensaje_obj,page
-):
-    """Actualiza los datos de un aviso existente."""
-    if not id_aviso:
-        mensaje_obj.value = "Seleccione un aviso para actualizar."
-        mensaje_obj.color = ft.colors.RED
-        return
-
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            UPDATE tabla_avisos
-            SET numero_aviso = %s, numero_expediente = %s, fecha_recepcion = %s,
-                fecha_reparacion = %s, hora_agenda = %s, cliente_id = %s,
-                aparato_id = %s, marca_id = %s, modelo = %s, numero_serie = %s,
-                codigo = %s, descripcion_averia = %s, descripcion_reparacion = %s,
-                nota = %s, empleado_id = %s, compañia_id = %s, grupo_id = %s,
-                estado_aviso_id = %s
-            WHERE id_aviso = %s
-        """
-        parametros = (
-            numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-            descripcion_averia, descripcion_reparacion, nota, empleado_id,
-            compañia_id, grupo_id, estado_aviso_id, id_aviso
-        )
-        conexion.ejecutar_consulta(consulta, parametros)
-        mensaje_obj.value = "¡Aviso actualizado con éxito!"
-        mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al actualizar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
-
-
-def eliminar_aviso(id_aviso, mensaje_obj):
-    """Elimina un aviso de la base de datos."""
-    if not id_aviso:
-        mensaje_obj.value = "Seleccione un aviso para eliminar."
-        mensaje_obj.color = ft.colors.RED
-        return
-
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = "DELETE FROM tabla_avisos WHERE id_aviso = %s"
-        conexion.ejecutar_consulta(consulta, (id_aviso,))
-        mensaje_obj.value = "¡Aviso eliminado con éxito!"
-        mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al eliminar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
-
-
-def cargar_datos(tabla_datos, mensaje_obj):
-    """Carga los avisos en la tabla principal."""
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            SELECT id_aviso, numero_aviso, numero_expediente, cliente_id, estado_aviso_id
-            FROM tabla_avisos
-            ORDER BY id_aviso DESC
-            LIMIT 30
-        """
-        resultados = conexion.ejecutar_consulta(consulta)
-    except Exception as e:
-        mensaje_obj.value = f"Error al cargar datos: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-        return
-    finally:
-        conexion.cerrar()
-
-    tabla_datos.rows.clear()
-    if resultados:
-        for fila in resultados:
-            tabla_datos.rows.append(
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text(str(fila[1]))),  # Número de Aviso
-                        ft.DataCell(ft.Text(fila[2])),  # Número de Expediente
-                        ft.DataCell(ft.Text(str(fila[3]))),  # Cliente
-                        ft.DataCell(ft.Text(str(fila[4]))),  # Estado
-                        ft.DataCell(
-                            ft.ElevatedButton(
-                                "Seleccionar",
-                                on_click=lambda e, id=fila[0]: seleccionar_aviso(id),
-                            )
-                        ),
-                    ]
-                )
-            )
-
-
-def seleccionar_aviso(
-    id_aviso, txt_id_aviso, txt_numero_aviso, txt_numero_expediente, txt_fecha_recepcion,
-    txt_fecha_reparacion, txt_hora_agenda, combo_cliente, combo_aparato, combo_marca,
-    txt_modelo, txt_numero_serie, txt_codigo, txt_descripcion_averia, txt_descripcion_reparacion,
-    txt_nota, combo_empleado, combo_compañia, combo_grupo, combo_estado_aviso, mensaje_obj, page
-):
-    """Selecciona un aviso de la tabla y autocompleta los campos."""
-    conexion = ConexionBD()
-    try:
-        conexion.conectar()
-        consulta = """
-            SELECT numero_aviso, numero_expediente, fecha_recepcion, fecha_reparacion, hora_agenda,
-            cliente_id, aparato_id, marca_id, modelo, numero_serie, codigo,
-            descripcion_averia, descripcion_reparacion, nota, empleado_id,
-            compañia_id, grupo_id, estado_aviso_id
-            FROM tabla_avisos
-            WHERE id_aviso = %s
-        """
-        resultado = conexion.ejecutar_consulta(consulta, (id_aviso,))
-        if resultado:
-            fila = resultado[0]
-            txt_id_aviso.data = id_aviso
-            txt_numero_aviso.value = fila[0]
-            txt_numero_expediente.value = fila[1]
-            txt_fecha_recepcion.value = fila[2]
-            txt_fecha_reparacion.value = fila[3]
-            txt_hora_agenda.value = fila[4]
-            combo_cliente.value = fila[5]
-            combo_aparato.value = fila[6]
-            combo_marca.value = fila[7]
-            txt_modelo.value = fila[8]
-            txt_numero_serie.value = fila[9]
-            txt_codigo.value = fila[10]
-            txt_descripcion_averia.value = fila[11]
-            txt_descripcion_reparacion.value = fila[12]
-            txt_nota.value = fila[13]
-            combo_empleado.value = fila[14]
-            combo_compañia.value = fila[15]
-            combo_grupo.value = fila[16]
-            combo_estado_aviso.value = fila[17]
-            mensaje_obj.value = "Aviso cargado correctamente."
-            mensaje_obj.color = ft.colors.GREEN
-    except Exception as e:
-        mensaje_obj.value = f"Error al cargar aviso: {str(e)}"
-        mensaje_obj.color = ft.colors.RED
-    finally:
-        conexion.cerrar()
-    page.update()
-
-
-def limpiar_campos(
-    txt_id_aviso, txt_numero_aviso, txt_numero_expediente, txt_fecha_recepcion, 
-    txt_fecha_reparacion, txt_hora_agenda, combo_cliente, combo_aparato, 
-    combo_marca, txt_modelo, txt_numero_serie, txt_codigo, 
-    txt_descripcion_averia, txt_descripcion_reparacion, txt_nota, 
-    combo_empleado, combo_compañia, combo_grupo, combo_estado_aviso, mensaje_obj, page
-):
-    """Limpia todos los campos de texto y dropdowns en la interfaz."""
-    # Limpiar campos de texto
-    txt_id_aviso.data = None
-    txt_id_aviso.value = ""
-    txt_numero_aviso.value = ""
-    txt_numero_expediente.value = ""
-    txt_fecha_recepcion.value = ""
-    txt_fecha_reparacion.value = ""
-    txt_hora_agenda.value = ""
-    txt_modelo.value = ""
-    txt_numero_serie.value = ""
-    txt_codigo.value = ""
-    txt_descripcion_averia.value = ""
-    txt_descripcion_reparacion.value = ""
-    txt_nota.value = ""
-
-    # Restablecer dropdowns
-    combo_cliente.value = None
-    combo_aparato.value = None
-    combo_marca.value = None
-    combo_empleado.value = None
-    combo_compañia.value = None
-    combo_grupo.value = None
-    combo_estado_aviso.value = None
-
-    # Limpiar mensajes
-    mensaje_obj.value = ""
-    mensaje_obj.color = ft.colors.GREEN
-
-    # Actualizar la interfaz
-    page.update()
-
-
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
-################################################################################################################
+################################################################################################################   '''
 def cargar_clientes():
     """Carga los clientes desde la base de datos y los devuelve como opciones del Dropdown."""
     conexion = ConexionBD()
@@ -676,17 +422,120 @@ def cargar_grupos():
         conexion.cerrar()
     return opciones
 
+# Función para manejar la selección de un cliente
+def manejar_seleccion_cliente(e):
+    """
+    Maneja la selección de un cliente y autocompleta los campos.
+    """
+    cliente_id = e.control.value
+    if cliente_id:
+        datos_cliente = obtener_datos_cliente(cliente_id)
+        if datos_cliente:
+            txt_codigo.value = datos_cliente.get("codigo_cliente", "")
+            txt_nombre.value = datos_cliente.get("nombre_cliente", "")
+            txt_nombre_comercial.value = datos_cliente.get("nombre_comercial", "")
+            txt_nif.value = datos_cliente.get("nif", "")
+            txt_domicilio.value = datos_cliente.get("domicilio", "")
+            txt_telefono_1.value = str(datos_cliente.get("telefono_1", ""))
+            txt_telefono_2.value = str(datos_cliente.get("telefono_2", ""))
+            txt_nota.value = datos_cliente.get("nota", "")
+            e.page.update()  # Actualizar la página para reflejar cambios
+
+# Función para cargar clientes en el Dropdown
+def cargar_clientes():
+    """
+    Carga los clientes desde la base de datos y devuelve una lista de opciones.
+    """
+    conexion = ConexionBD()
+    opciones = []
+    try:
+        conexion.conectar()
+        consulta = "SELECT id_cliente, nombre_cliente FROM tabla_clientes"
+        resultados = conexion.ejecutar_consulta(consulta)
+        for fila in resultados:
+            opciones.append(ft.dropdown.Option(key=fila[0], text=fila[1]))
+    except Exception as e:
+        print(f"Error al cargar clientes: {str(e)}")
+    finally:
+        conexion.cerrar()
+    return opciones
+
+# Función para obtener datos de un cliente específico
+def obtener_datos_cliente(cliente_id):
+    """
+    Recupera los datos de un cliente específico desde la base de datos.
+    """
+    conexion = ConexionBD()
+    datos_cliente = {}
+    try:
+        conexion.conectar()
+        consulta = """
+            SELECT codigo_cliente, nombre_cliente, nombre_cliente_comercial, nif_cliente,
+                   domicilio, telefono_1, telefono_2, nota_cliente
+            FROM tabla_clientes
+            WHERE id_cliente = %s
+        """
+        resultado = conexion.ejecutar_consulta(consulta, (cliente_id,))
+        if resultado:
+            fila = resultado[0]
+            datos_cliente = {
+                "codigo_cliente": fila[0],
+                "nombre_cliente": fila[1],
+                "nombre_comercial": fila[2],
+                "nif": fila[3],
+                "domicilio": fila[4],
+                "telefono_1": fila[5],
+                "telefono_2": fila[6],
+                "nota": fila[7],
+            }
+    except Exception as e:
+        print(f"Error al obtener datos del cliente: {str(e)}")
+    finally:
+        conexion.cerrar()
+    return datos_cliente
+
+# Función para inicializar el FilePicker
+def inicializar_file_picker(page):
+    """
+    Inicializa el FilePicker y lo agrega al overlay de la página.
+    """
+    archivo = ft.FilePicker(on_result=lambda result: procesar_archivo(result, page))
+    page.overlay.append(archivo)
+    page.update()  # Asegurarse de que el FilePicker esté disponible en la página
+    return archivo
+
+# Función para manejar la selección del archivo
+def manejar_subir_archivo(e, archivo):
+    """
+    Maneja el evento del botón 'Subir Archivo'.
+    Abre el selector de archivos del sistema operativo.
+    """
+    archivo.pick_files(allow_multiple=False)  # Permite seleccionar un solo archivo
 
 
+# Función para procesar el archivo seleccionado
+# Función para procesar el archivo seleccionado
+# Función para procesar el archivo seleccionado
+def procesar_archivo(result, page):
+    """
+    Procesa el archivo seleccionado por el usuario.
+    Guarda su nombre en el campo 'txt_archivos_adjuntos' y su contenido binario en memoria.
+    """
+    global archivo_binario
 
+    if result.files:
+        archivo_seleccionado = result.files[0]
+        ruta_archivo = archivo_seleccionado.path
 
+        # Leer archivo en formato binario
+        with open(ruta_archivo, "rb") as f:
+            archivo_binario = f.read()
 
+        # Mostrar el nombre del archivo en el campo de texto
+        txt_archivos_adjuntos.value = archivo_seleccionado.name
+        page.update()  # Refrescar la página para reflejar los cambios
+    print(f"Archivos seleccionados: {result.files}")
+    print(f"Nombre del archivo: {archivo_seleccionado.name}")    
 
-
-
-
-
-
-
-# def mensaje_prueba(*args):
-#     print("Registrar llamado con argumentos:", args)
+# txt_archivos_adjuntos.value = archivo_seleccionado.name
+# txt_archivos_adjuntos.page.update()
